@@ -58,7 +58,7 @@ means the user token is not reaching the app. Do not go further until it is fixe
 
 1. Call `list_skills` (same curl, `"name":"list_skills"`). It should return the
    curated skills with `upstream_version` equal to `upstream.lock`.
-2. Call `describe_table` on a table you can read (`"arguments":{"table":"<catalog>.<schema>.<table>"}`).
+2. Call `describe_table` on a table you can read (`"arguments":{"full_name":"<catalog>.<schema>.<table>"}`).
    A table you cannot read must be refused.
 
 ## If a deploy dropped the scopes
