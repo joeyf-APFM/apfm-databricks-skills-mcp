@@ -17,6 +17,10 @@ class FileNotAllowed(ValueError):
     pass
 
 
+class CatalogError(ValueError):
+    pass
+
+
 @dataclass(frozen=True)
 class Skill:
     name: str
@@ -25,14 +29,19 @@ class Skill:
     files: tuple[str, ...]
 
 
-def _frontmatter(text: str) -> dict:
+def _frontmatter(text: str, skill_dir: str) -> dict:
     if not text.startswith("---\n"):
-        return {}
+        raise CatalogError(f"{skill_dir}: SKILL.md has no frontmatter")
     end = text.find("\n---\n", 3)
     if end == -1:
-        return {}
-    data = yaml.safe_load(text[4 : end + 1])
-    return data if isinstance(data, dict) else {}
+        raise CatalogError(f"{skill_dir}: SKILL.md frontmatter is not closed")
+    try:
+        data = yaml.safe_load(text[4 : end + 1])
+    except yaml.YAMLError as e:
+        raise CatalogError(f"{skill_dir}: invalid frontmatter YAML: {e}") from e
+    if not isinstance(data, dict):
+        raise CatalogError(f"{skill_dir}: frontmatter is not a mapping")
+    return data
 
 
 def _list_files(skill_dir: Path) -> tuple[str, ...]:
@@ -58,12 +67,18 @@ class SkillCatalog:
             md = d / "SKILL.md"
             if d.is_symlink() or not d.is_dir() or md.is_symlink() or not md.is_file():
                 continue
-            fm = _frontmatter(md.read_text(encoding="utf-8"))
+            fm = _frontmatter(md.read_text(encoding="utf-8"), d.name)
             name = d.name  # directory name is the canonical id (equals frontmatter name in curated output)
+            description = " ".join(str(fm.get("description") or "").split())
+            if not description:
+                raise CatalogError(f"{d.name}: missing or empty description")
+            fit = fm.get("apfm_fit")
+            if fit not in ("works", "reference"):
+                raise CatalogError(f"{d.name}: apfm_fit must be 'works' or 'reference', got {fit!r}")
             skills[name] = Skill(
                 name=name,
-                description=" ".join(str(fm.get("description", "")).split()),
-                fit=str(fm.get("apfm_fit", "reference")),
+                description=description,
+                fit=fit,
                 files=_list_files(d),
             )
         version_file = root / "UPSTREAM_VERSION"

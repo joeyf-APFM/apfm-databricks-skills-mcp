@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from skills_mcp.catalog import FileNotAllowed, SkillCatalog, SkillNotFound
+from skills_mcp.catalog import CatalogError, FileNotAllowed, SkillCatalog, SkillNotFound
 from tools.curate import curate
 
 FIXTURE = Path(__file__).parent / "fixtures" / "upstream"
@@ -100,3 +100,37 @@ def test_rejects_symlink_escaping_skill(curated, tmp_path):
 
 def test_upstream_version_read(cat):
     assert cat.upstream_version == "0.0.1"
+
+
+def _corrupt(curated, tmp_path, fn):
+    root = tmp_path / "c"
+    shutil.copytree(curated, root)
+    md = root / "alpha" / "SKILL.md"
+    md.write_text(fn(md.read_text()))
+    return root
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda t: t.replace("name: alpha", "name: [unclosed", 1),  # invalid YAML
+        lambda t: t.split("\n---\n", 1)[1],  # no frontmatter
+        lambda t: "---\n- a\n- b\n---\n" + t.split("\n---\n", 1)[1],  # not a mapping
+        lambda t: t.replace("description: >-", "description: ''\nx: >-", 1),  # empty description
+        lambda t: t.replace("apfm_fit: works\n", ""),  # missing fit
+        lambda t: t.replace("apfm_fit: works", "apfm_fit: bogus"),  # unknown fit
+    ],
+    ids=["invalid-yaml", "no-frontmatter", "not-mapping", "empty-description", "missing-fit", "unknown-fit"],
+)
+def test_malformed_frontmatter_fails_fast(curated, tmp_path, mutate):
+    root = _corrupt(curated, tmp_path, mutate)
+    with pytest.raises(CatalogError, match="alpha"):
+        SkillCatalog.from_dir(root)
+
+
+def test_missing_description_fails_fast(curated, tmp_path):
+    import re
+
+    root = _corrupt(curated, tmp_path, lambda t: re.sub(r"description: >-\n(  .*\n)+", "", t))
+    with pytest.raises(CatalogError, match="alpha"):
+        SkillCatalog.from_dir(root)
