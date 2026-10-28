@@ -1,0 +1,10 @@
+include:
+  works: [databricks-dbsql, databricks-data-discovery, databricks-metric-views, databricks-ai-functions,
+          databricks-unity-catalog, databricks-iceberg, databricks-docs, databricks-spark-structured-streaming,
+          databricks-app-design, databricks-synthetic-data-gen]
+  reference: [databricks-apps, databricks-apps-python, databricks-dabs, databricks-jobs, databricks-pipelines,
+              databricks-lakebase, databricks-model-serving, databricks-vector-search, databricks-execution-compute,
+              databricks-ml-training, databricks-mlflow-evaluation, databricks-genie-agents, databricks-lakeflow-connect,
+              databricks-serverless-migration, databricks-serverless, databricks-zerobus-ingest, databricks-python-sdk,
+              databricks-aibi-dashboards, databricks-ai-runtime, databricks-unstructured-pdf-generation, databricks-core]
+exclude: [databricks-setup-local, databricks-unity-gateway]
