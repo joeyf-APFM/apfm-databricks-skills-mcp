@@ -1,14 +1,16 @@
 """FastMCP server factory for the skills MCP app."""
 
 from pathlib import Path
+from typing import Any
 
 from mcp.server.fastmcp import Context, FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.server.fastmcp.prompts import Prompt
 from mcp.server.transport_security import TransportSecuritySettings
 
-from skills_mcp import auth
+from skills_mcp import auth, uc_tools
 from skills_mcp.catalog import FileNotAllowed, SkillCatalog, SkillNotFound
+from skills_mcp.errors import sdk_errors_as_tool_errors
 from skills_mcp.index import build_index
 
 
@@ -26,15 +28,44 @@ def build_server(skills_dir: Path | None = None) -> FastMCP:
     )
 
     @mcp.tool()
+    @sdk_errors_as_tool_errors
     def whoami(ctx: Context) -> dict[str, str | None]:
         """Return the Databricks identity of the calling user."""
         me = auth.client_from_ctx(ctx).current_user.me()
         return {"user_name": me.user_name, "display_name": me.display_name}
 
+    _register_uc_tools(mcp)
+
     if catalog is not None:
         _register_skills(mcp, catalog)
 
     return mcp
+
+
+def _register_uc_tools(mcp: FastMCP) -> None:
+    @mcp.tool()
+    @sdk_errors_as_tool_errors
+    def list_catalogs(ctx: Context, limit: int = 100) -> dict[str, Any]:
+        """List Unity Catalog catalogs you can see (max 500; `truncated` says if more exist)."""
+        return uc_tools.list_catalogs(auth.client_from_ctx(ctx), limit)
+
+    @mcp.tool()
+    @sdk_errors_as_tool_errors
+    def list_schemas(ctx: Context, catalog: str, limit: int = 100) -> dict[str, Any]:
+        """List schemas in a catalog (max 500; `truncated` says if more exist)."""
+        return uc_tools.list_schemas(auth.client_from_ctx(ctx), catalog, limit)
+
+    @mcp.tool()
+    @sdk_errors_as_tool_errors
+    def list_tables(ctx: Context, catalog: str, schema: str, limit: int = 100) -> dict[str, Any]:
+        """List tables in a schema (max 500; `truncated` says if more exist)."""
+        return uc_tools.list_tables(auth.client_from_ctx(ctx), catalog, schema, limit)
+
+    @mcp.tool()
+    @sdk_errors_as_tool_errors
+    def describe_table(ctx: Context, full_name: str) -> dict[str, Any]:
+        """Describe a table (catalog.schema.table): type, format, owner, comment and columns."""
+        return uc_tools.describe_table(auth.client_from_ctx(ctx), full_name)
 
 
 def _read(catalog: SkillCatalog, name: str, path: str = "SKILL.md") -> str:
