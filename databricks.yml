@@ -1,0 +1,18 @@
+bundle:
+  name: apfm-databricks-skills-mcp
+variables:
+  app_name: { default: mcp-apfm-skills-sbx }
+  users_group: { description: "Group(s) that hold the Databricks role in Platform MCP" }
+resources:
+  apps:
+    skills_mcp:
+      name: ${var.app_name}
+      description: "APFM-curated Databricks agent skills and read-only Unity Catalog tools"
+      source_code_path: ./app
+      user_api_scopes: [iam.current-user:read, catalog.catalogs:read, catalog.schemas:read, catalog.tables:read]
+      permissions:
+        - group_name: ${var.users_group}
+          level: CAN_USE
+targets:
+  sandbox: { default: true, workspace: { host: https://dbc-88a3d066-4cdb.cloud.databricks.com } }
+  prod:    { mode: production, variables: { app_name: mcp-apfm-skills }, workspace: { host: https://dbc-88a3d066-4cdb.cloud.databricks.com } }

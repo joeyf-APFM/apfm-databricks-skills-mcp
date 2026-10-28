@@ -1,0 +1,18 @@
+[project]
+name = "apfm-databricks-skills-mcp"
+version = "0.1.0"
+description = "MCP server (Databricks App) serving APFM Databricks agent skills and read-only Unity Catalog tools"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.10,<2",
+    "databricks-sdk>=0.40",
+    "PyYAML>=6",
+]
+
+[dependency-groups]
+dev = ["pytest", "httpx"]
+
+[tool.pytest.ini_options]
+pythonpath = ["app", "."]
+testpaths = ["tests"]
+filterwarnings = ["ignore:Using `httpx` with `starlette.testclient`"]
