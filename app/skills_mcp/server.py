@@ -3,6 +3,7 @@
 from pathlib import Path
 from typing import Any
 
+from databricks.sdk import WorkspaceClient
 from mcp.server.fastmcp import Context, FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.server.fastmcp.prompts import Prompt
@@ -12,6 +13,11 @@ from skills_mcp import auth, uc_tools
 from skills_mcp.catalog import FileNotAllowed, SkillCatalog, SkillNotFound
 from skills_mcp.errors import sdk_errors_as_tool_errors
 from skills_mcp.index import build_index
+
+
+def _whoami(w: WorkspaceClient) -> dict[str, str | None]:
+    me = w.current_user.me()
+    return {"user_name": me.user_name, "display_name": me.display_name}
 
 
 def build_server(skills_dir: Path | None = None) -> FastMCP:
@@ -29,10 +35,9 @@ def build_server(skills_dir: Path | None = None) -> FastMCP:
 
     @mcp.tool()
     @sdk_errors_as_tool_errors
-    def whoami(ctx: Context) -> dict[str, str | None]:
+    async def whoami(ctx: Context) -> dict[str, str | None]:
         """Return the Databricks identity of the calling user."""
-        me = auth.client_from_ctx(ctx).current_user.me()
-        return {"user_name": me.user_name, "display_name": me.display_name}
+        return await auth.run_as_user(ctx, _whoami)
 
     _register_uc_tools(mcp)
 
@@ -45,27 +50,27 @@ def build_server(skills_dir: Path | None = None) -> FastMCP:
 def _register_uc_tools(mcp: FastMCP) -> None:
     @mcp.tool()
     @sdk_errors_as_tool_errors
-    def list_catalogs(ctx: Context, limit: int = 100) -> dict[str, Any]:
+    async def list_catalogs(ctx: Context, limit: int = 100) -> dict[str, Any]:
         """List Unity Catalog catalogs you can see (max 500; `truncated` says if more exist)."""
-        return uc_tools.list_catalogs(auth.client_from_ctx(ctx), limit)
+        return await auth.run_as_user(ctx, uc_tools.list_catalogs, limit)
 
     @mcp.tool()
     @sdk_errors_as_tool_errors
-    def list_schemas(ctx: Context, catalog: str, limit: int = 100) -> dict[str, Any]:
+    async def list_schemas(ctx: Context, catalog: str, limit: int = 100) -> dict[str, Any]:
         """List schemas in a catalog (max 500; `truncated` says if more exist)."""
-        return uc_tools.list_schemas(auth.client_from_ctx(ctx), catalog, limit)
+        return await auth.run_as_user(ctx, uc_tools.list_schemas, catalog, limit)
 
     @mcp.tool()
     @sdk_errors_as_tool_errors
-    def list_tables(ctx: Context, catalog: str, schema: str, limit: int = 100) -> dict[str, Any]:
+    async def list_tables(ctx: Context, catalog: str, schema: str, limit: int = 100) -> dict[str, Any]:
         """List tables in a schema (max 500; `truncated` says if more exist)."""
-        return uc_tools.list_tables(auth.client_from_ctx(ctx), catalog, schema, limit)
+        return await auth.run_as_user(ctx, uc_tools.list_tables, catalog, schema, limit)
 
     @mcp.tool()
     @sdk_errors_as_tool_errors
-    def describe_table(ctx: Context, full_name: str) -> dict[str, Any]:
+    async def describe_table(ctx: Context, full_name: str) -> dict[str, Any]:
         """Describe a table (catalog.schema.table): type, format, owner, comment and columns."""
-        return uc_tools.describe_table(auth.client_from_ctx(ctx), full_name)
+        return await auth.run_as_user(ctx, uc_tools.describe_table, full_name)
 
 
 def _read(catalog: SkillCatalog, name: str, path: str = "SKILL.md") -> str:
@@ -103,7 +108,10 @@ def _register_skills(mcp: FastMCP, catalog: SkillCatalog) -> None:
     @mcp.resource("skill://{name}", mime_type="text/markdown")
     def skill_resource(name: str) -> str:
         """A skill's SKILL.md."""
-        return catalog.read(name)
+        try:
+            return catalog.read(name)
+        except SkillNotFound:
+            raise ValueError(f"Unknown skill '{name}'. Call list_skills to see available skills.") from None
 
     for skill in catalog.list():
         mcp.add_prompt(Prompt.from_function(_prompt_fn(skill.name), name=skill.name, description=skill.description))

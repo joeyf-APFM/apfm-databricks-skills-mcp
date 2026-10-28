@@ -12,7 +12,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Install dependencies
+        run: uv sync
+      - name: Run tests
+        run: uv run pytest -q
+      - name: Fetch upstream skills
+        run: bash tools/fetch_upstream.sh "$RUNNER_TEMP/up"
+      - name: Check curated skills match upstream and config
+        run: >
+          uv run python -m tools.curate
+          --upstream "$RUNNER_TEMP/up"
+          --config curation.yaml
+          --out app/skills
+          --check
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     environment: prod
     env:

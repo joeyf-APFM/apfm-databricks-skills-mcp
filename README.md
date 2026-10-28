@@ -57,7 +57,7 @@ means the user token is not reaching the app. Do not go further until it is fixe
 ## Verifying a deploy
 
 1. Call `list_skills` (same curl, `"name":"list_skills"`). It should return the
-   curated skills with `upstream_version` equal to `upstream.lock`.
+   curated skills with `upstream_version` equal to the `upstream.lock` tag without the leading "v" (`v0.2.37` gives `0.2.37`).
 2. Call `describe_table` on a table you can read (`"arguments":{"full_name":"<catalog>.<schema>.<table>"}`).
    A table you cannot read must be refused.
 
@@ -75,6 +75,8 @@ All four must be present: `iam.current-user:read`, `catalog.catalogs:read`,
 3. Check again. If still missing, set them in the app's settings in the workspace UI.
 
 ## CI secrets and variables
+
+Recommended: enable branch protection on `main` and require the `ci` check, so only tested code reaches the prod deploy.
 
 Repo secrets (a deploy service principal that can manage the prod app):
 

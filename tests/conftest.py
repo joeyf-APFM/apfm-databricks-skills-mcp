@@ -17,6 +17,16 @@ def make_client(skills_dir: Path | None = None):
         yield c
 
 
+@pytest.fixture(scope="session")
+def curated_skills(tmp_path_factory):
+    from tools.curate import curate
+
+    fixture = Path(__file__).parent / "fixtures" / "upstream"
+    out = tmp_path_factory.mktemp("curated_shared") / "out"
+    curate(fixture, fixture / "curation.yaml", out)
+    return out
+
+
 @pytest.fixture
 def client():
     with make_client() as c:

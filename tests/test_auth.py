@@ -20,3 +20,10 @@ def test_user_client_uses_pat_auth_and_https_host(monkeypatch):
     w = user_client("user-token")
     assert w.config.auth_type == "pat"
     assert w.config.host == "https://dbc-88a3d066-4cdb.cloud.databricks.com"
+
+
+def test_user_client_sets_bounded_timeouts(monkeypatch):
+    monkeypatch.setenv("DATABRICKS_HOST", "dbc-88a3d066-4cdb.cloud.databricks.com")
+    w = user_client("user-token")
+    assert w.config.retry_timeout_seconds == 30
+    assert w.config.http_timeout_seconds == 15

@@ -100,3 +100,24 @@ def test_skill_tools_need_no_user_token(client):
     result = mcp_call(client, "list_skills", {}, None)
     assert not result.get("isError")
     assert len(result["structuredContent"]["skills"]) == 2
+
+
+def test_resource_read_unknown_skill_error_not_doubled(client):
+    body = {"jsonrpc": "2.0", "id": 1, "method": "resources/read", "params": {"uri": "skill://nope"}}
+    r = client.post("/mcp", headers=MCP_HEADERS, json=body)
+    message = r.json()["error"]["message"]
+    assert message.count("Unknown skill 'nope'") == 1
+
+
+def test_tools_list_contract(client):
+    names = {t["name"] for t in rpc(client, "tools/list")["tools"]}
+    assert names == {
+        "whoami",
+        "list_skills",
+        "load_skill",
+        "get_skill_file",
+        "list_catalogs",
+        "list_schemas",
+        "list_tables",
+        "describe_table",
+    }

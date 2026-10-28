@@ -36,7 +36,7 @@ def list_schemas(w: WorkspaceClient, catalog: str, limit: int = 100) -> dict[str
 
 
 def list_tables(w: WorkspaceClient, catalog: str, schema: str, limit: int = 100) -> dict[str, Any]:
-    got, truncated = _take(w.tables.list(catalog_name=catalog, schema_name=schema), limit)
+    got, truncated = _take(w.tables.list(catalog_name=catalog, schema_name=schema, omit_columns=True, omit_properties=True), limit)
     return {
         "items": [
             {"name": t.name, "full_name": t.full_name, "table_type": _enum(t.table_type), "comment": t.comment}
