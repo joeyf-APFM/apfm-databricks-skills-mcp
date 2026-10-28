@@ -1,0 +1,38 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: databricks/setup-cli@v1.22.1
+      - name: Deploy prod app
+        run: databricks apps deploy -t prod --var users_group="${{ vars.USERS_GROUP }}"
+      - name: Verify user API scopes survived the deploy
+        run: |
+          set -euo pipefail
+          app_json="$(databricks apps get mcp-apfm-skills -o json)"
+          missing=0
+          for scope in iam.current-user:read catalog.catalogs:read catalog.schemas:read catalog.tables:read; do
+            if ! jq -e --arg s "$scope" '(.user_api_scopes // []) | index($s) != null' <<<"$app_json" >/dev/null; then
+              echo "::error::Missing user_api_scope: $scope"
+              missing=1
+            fi
+          done
+          exit "$missing"
