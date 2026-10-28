@@ -66,8 +66,11 @@ def _build(upstream: Path, config: Path, dest: Path) -> CurationResult:
 
     note_works = (OVERLAY / "note-works.md").read_text().rstrip("\n")
     note_ref = (OVERLAY / "note-reference.md").read_text().rstrip("\n")
-    manifest = json.loads((upstream / "manifest.json").read_text())
-    version = str(manifest["version"])
+    version_file = upstream / "metaplugin" / "version.meta.json"
+    try:
+        version = str(json.loads(version_file.read_text())["current_version"])
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        raise CurationError(f"cannot read current_version from metaplugin/version.meta.json: {e!r}") from e
 
     included = []
     for skill in upstream_skills:

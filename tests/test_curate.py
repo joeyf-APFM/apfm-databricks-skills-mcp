@@ -136,3 +136,15 @@ def test_check_mode_reports_drift(upstream, tmp_path):
     r = cli(upstream, out, "--check")
     assert r.returncode == 1
     assert "alpha/references/one.md" in r.stdout
+
+
+def test_missing_version_file_fails(upstream, tmp_path):
+    (upstream / "metaplugin/version.meta.json").unlink()
+    with pytest.raises(CurationError, match="version.meta.json"):
+        run(upstream, tmp_path)
+
+
+def test_version_file_without_key_fails(upstream, tmp_path):
+    (upstream / "metaplugin/version.meta.json").write_text("{}")
+    with pytest.raises(CurationError, match="current_version"):
+        run(upstream, tmp_path)
