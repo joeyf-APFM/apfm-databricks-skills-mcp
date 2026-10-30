@@ -76,6 +76,9 @@ Expected: a result containing your `user_name`.
 Stop if you get a 401, an HTML login page, or the missing-token message. That
 means the user token is not reaching the app. Do not go further until it is fixed.
 
+To connect Claude Desktop to the app directly, see
+`docs/claude-desktop-discovery.md`.
+
 ## Verifying a deploy
 
 1. Call `list_skills` (same curl, `"name":"list_skills"`). It should return the
