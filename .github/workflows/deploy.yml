@@ -53,7 +53,7 @@ jobs:
           app_json="$(databricks apps get mcp-apfm-skills -o json)"
           missing=0
           for scope in iam.current-user:read catalog.catalogs:read catalog.schemas:read catalog.tables:read; do
-            if ! jq -e --arg s "$scope" '(.user_api_scopes // []) | index($s) != null' <<<"$app_json" >/dev/null; then
+            if ! jq -e --arg s "$scope" '(.effective_user_api_scopes // []) | index($s) != null' <<<"$app_json" >/dev/null; then
               echo "::error::Missing user_api_scope: $scope"
               missing=1
             fi

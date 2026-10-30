@@ -9,7 +9,7 @@ resources:
       name: ${var.app_name}
       description: "APFM-curated Databricks agent skills and read-only Unity Catalog tools"
       source_code_path: ./app
-      user_api_scopes: [iam.current-user:read, catalog.catalogs:read, catalog.schemas:read, catalog.tables:read]
+      user_api_scopes: [catalog.catalogs:read, catalog.schemas:read, catalog.tables:read]
       permissions:
         - group_name: ${var.users_group}
           level: CAN_USE

@@ -1,0 +1,487 @@
+<title>Databricks Skills in Platform MCP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single reading column (about 70ch) with a sticky contents rail on wide screens; tables and code scroll inside their own boxes. */
+:root {
+  --bg: #FFFDF7;          /* Soft White */
+  --surface: #F7F3E9;     /* Gray Tint 1 */
+  --surface-2: #F2F7F5;   /* Blue Tint 1 */
+  --fg: #1F3066;          /* Midnight Blue */
+  --muted: #5E6168;
+  --accent: #4F6AC5;      /* Serenity Blue */
+  --rule: #E4DFD2;
+  --ok: #1F5942;  --ok-bg: #DDF0E7;
+  --warn: #7A5A12; --warn-bg: #F6EBCB;
+  --no: #8E2E2E;  --no-bg: #F6DEDC;
+  --code-bg: #F2F7F5;
+  --font-display: "Optima LT Pro", Optima, Candara, "Trebuchet MS", sans-serif;
+  --font-body: "Commissioner", "Trebuchet MS", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11182F; --surface: #18213D; --surface-2: #1C2747; --fg: #EEF1FA; --muted: #A7AEC2;
+    --accent: #9DB0F0; --rule: #2B3657;
+    --ok: #A9E2C6; --ok-bg: #1D3B31; --warn: #F1D58C; --warn-bg: #3D3419; --no: #F2B3AE; --no-bg: #46221F;
+    --code-bg: #1A2442; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11182F; --surface: #18213D; --surface-2: #1C2747; --fg: #EEF1FA; --muted: #A7AEC2;
+  --accent: #9DB0F0; --rule: #2B3657;
+  --ok: #A9E2C6; --ok-bg: #1D3B31; --warn: #F1D58C; --warn-bg: #3D3419; --no: #F2B3AE; --no-bg: #46221F;
+  --code-bg: #1A2442; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6; letter-spacing: -0.005em;
+}
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+  display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 56px;
+}
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 24px 56px; } nav.toc { display: none; } }
+
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 32px); align-self: start; font-size: 13px; }
+nav.toc .label { text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; font-size: 11px; margin-bottom: 10px; }
+nav.toc ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+nav.toc a { color: var(--muted); text-decoration: none; }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); }
+
+main { min-width: 0; max-width: 72ch; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; letter-spacing: -0.02em; line-height: 1.2; }
+h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); margin: 8px 0 12px; }
+h2 { font-size: 1.65rem; margin: 56px 0 12px; padding-top: 20px; border-top: 1px solid var(--rule); }
+h3 { font-size: 1.2rem; margin: 28px 0 8px; }
+p { margin: 0 0 14px; }
+ul { padding-left: 20px; }
+li { margin-bottom: 6px; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+strong { font-weight: 600; }
+.eyebrow { text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; font-weight: 600; color: var(--accent); }
+.lede { font-size: 1.15rem; color: var(--fg); }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13px; color: var(--muted); margin: 0 0 28px; }
+.meta span b { color: var(--fg); font-weight: 600; }
+
+.summary { background: var(--surface-2); border: 1px solid var(--rule); border-radius: 6px; padding: 20px 22px; margin: 8px 0 8px; }
+.summary h2 { border: 0; margin: 0 0 8px; padding: 0; font-size: 1.25rem; }
+.summary ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.summary li { margin: 0; }
+
+code, pre, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+pre { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px; overflow-x: auto; line-height: 1.5; margin: 8px 0 18px; }
+
+.table-box { overflow-x: auto; margin: 10px 0 20px; border: 1px solid var(--rule); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+thead th { background: var(--surface); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+.rec { background: var(--surface-2); }
+
+.chip { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.no { background: var(--no-bg); color: var(--no); }
+.chip.info { background: var(--surface-2); color: var(--accent); border: 1px solid var(--rule); }
+
+.skills-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 4px; }
+.skills-filter button {
+  font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--rule); background: var(--bg); color: var(--fg);
+}
+.skills-filter button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+.steps { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 0; counter-reset: s -1; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 36px minmax(0,1fr); gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--rule); margin: 0; }
+.steps li::before { content: counter(s, decimal); font-family: var(--font-mono); font-size: 13px; color: var(--accent); border: 1px solid var(--accent); border-radius: 50%; width: 28px; height: 28px; display: grid; place-items: center; }
+.steps .who { font-size: 13px; color: var(--muted); }
+.steps h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.steps p { margin: 0 0 4px; }
+
+.callout { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 16px 0; color: var(--fg); }
+.decision { border: 1px solid var(--ok); background: var(--ok-bg); color: var(--fg); border-radius: 6px; padding: 14px 18px; margin: 12px 0 20px; }
+.decision .chip { margin-bottom: 6px; background: var(--bg); color: var(--ok); }
+.diagram { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; padding: 12px; background: var(--surface); margin: 10px 0 20px; }
+.diagram svg { display: block; min-width: 660px; width: 100%; height: auto; }
+.diagram text { font-family: var(--font-body); }
+.faq dt { font-weight: 600; margin-top: 16px; }
+.faq dd { margin: 4px 0 0; }
+footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Contents">
+    <div class="label">Contents</div>
+    <ol>
+      <li><a href="#summary">Summary</a></li>
+      <li><a href="#asks">What we need from you</a></li>
+      <li><a href="#background">Background</a></li>
+      <li><a href="#gap">The gap</a></li>
+      <li><a href="#skills">Skill-by-skill fit</a></li>
+      <li><a href="#design">What we're building</a></li>
+      <li><a href="#cli">Python SDK only</a></li>
+      <li><a href="#platform">Platform MCP changes</a></li>
+      <li><a href="#options">Options considered</a></li>
+      <li><a href="#plan">Rollout plan</a></li>
+      <li><a href="#risks">Risks and open questions</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <div class="eyebrow">Proposal · Decision recorded</div>
+    <h1>Databricks Skills in Platform MCP</h1>
+    <p class="lede">How we make Databricks' official agent skills available to everyone who uses Platform MCP, including Claude Desktop users who never touch a terminal.</p>
+    <div class="meta">
+      <span><b>Author</b> Joey Filichia</span>
+      <span><b>Updated</b> October 28, 2026</span>
+      <span><b>Status</b> Decided: Databricks App (Option D)</span>
+      <span><b>Analyzed</b> <span class="mono">platform-mcp@6675af1</span>, <span class="mono">databricks-agent-skills@v0.2.37</span></span>
+    </div>
+
+    <section class="summary" id="summary">
+      <h2>Summary</h2>
+      <ul>
+        <li>Databricks publishes 33 stable agent skills, structured guides that teach coding agents how to do Databricks work well. Today they install locally and assume a personal Databricks CLI login.</li>
+        <li>Platform MCP users reach Databricks through our gateway with server-side OAuth and read-only SQL and Genie. Most have no CLI, so most skills would tell them to run commands they can't run.</li>
+        <li><strong>Decision:</strong> we'll build our own MCP server and host it as a Databricks App on the <span class="mono">aplaceformom</span> workspace. It serves a curated, APFM-adapted set of skills, plus a small set of typed, read-only tools built on the Databricks Python SDK. Platform MCP reaches it as a new server in its Databricks connection, and other clients can connect to it directly.</li>
+        <li>The app uses only the Python SDK and never runs the Databricks CLI. Each operation is its own tool with its own read or write level, and writes stay blocked until reviewed one by one.</li>
+        <li>Engineers who build and deploy on Databricks keep installing the official plugin locally.</li>
+        <li><strong>Not yet verified:</strong> whether the app accepts the per-user token Platform MCP already holds, and whether the user's token reaches the app's code. Step 0 of the plan is a short spike to confirm both.</li>
+      </ul>
+    </section>
+
+    <h2 id="asks">What we need from you</h2>
+    <div class="table-box">
+      <table>
+        <thead><tr><th>Team</th><th>Ask</th></tr></thead>
+        <tbody>
+          <tr><td>Platform MCP maintainers (DPLAT)</td><td>Review the Platform MCP changes: a per-server URL override and a new server type. Agree on who owns the app's code and on-call.</td></tr>
+          <tr><td>Data Platform</td><td>Host the app on the workspace. Approve the user scopes it requests and the <code>CAN_USE</code> grants. Confirm compute size and cost.</td></tr>
+          <tr><td>Security and IAM</td><td>Review the tool list and how write tools stay blocked. Confirm the license obligations below.</td></tr>
+          <tr><td>Engineering teams using Databricks</td><td>Tell us which skills and which operations you'd use through Platform MCP, so we choose the right first set of tools.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="background">Background</h2>
+    <h3>Platform MCP today</h3>
+    <p>Platform MCP is our Go gateway at <code>platform-mcp.apfmtech.com/mcp/</code>. Claude Code and Codex connect over HTTP, and Claude Desktop connects through the APFM connector. Each provider (AWS, GitHub, Atlassian, Databricks, and others) exposes a discover tool and a call tool. Access is checked on every request against the caller's role.</p>
+    <p>The Databricks provider forwards calls to Databricks' own MCP servers on the <span class="mono">aplaceformom</span> workspace. It uses per-user OAuth, so Unity Catalog permissions and audit logs apply to the actual person. Today it allows read-only SQL and seven Helix Care Genie spaces. Each server type is a short entry in <code>servertypes.go</code> that defines its URL and which tools are allowed.</p>
+
+    <h3>databricks-agent-skills</h3>
+    <p>This is Databricks' official repository of skills: 33 stable ones, about 3.3 MB of markdown, each with a <code>SKILL.md</code> and reference files. It covers SQL, Genie, Unity Catalog, apps, bundles, jobs, pipelines, Lakebase, model serving, and more. Engineers install it with <code>databricks aitools install</code> or a plugin marketplace. The plugins also ship hooks that steer the agent to the right skill. New releases arrive several times a week.</p>
+
+    <h2 id="gap">The gap</h2>
+    <p>The skills were written for someone at a terminal with their own Databricks login. Our users mostly aren't.</p>
+    <div class="table-box">
+      <table>
+        <thead><tr><th>The skills assume</th><th>A Platform MCP user has</th></tr></thead>
+        <tbody>
+          <tr><td>A local <code>databricks</code> CLI with an authenticated profile. The core skill alone has 136 CLI commands.</td><td>No CLI. Auth happens server-side. Desktop users have no shell at all.</td></tr>
+          <tr><td>Skills are files on disk that the agent picks up automatically</td><td>MCP has no built-in skill concept. Content must be fetched with a tool and the agent must be told it exists.</td></tr>
+          <tr><td>Full read and write: deploy bundles, create jobs, apps, and endpoints</td><td>Read-only SQL and Genie</td></tr>
+          <tr><td>Data questions go to <code>databricks genie ask</code></td><td>Data questions go to our configured Genie spaces through <code>databricks_call</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The app closes this gap in three ways: it delivers the skills over MCP, it adds a short APFM note to each skill, and it replaces the CLI steps people need most with typed tools.</p>
+
+    <h2 id="skills">Skill-by-skill fit</h2>
+    <p>A first pass at which skills are useful behind Platform MCP. This is the list we'd like teams to react to. Some "Reference only" skills become usable as we add typed tools for their operations.</p>
+    <div class="skills-filter" role="group" aria-label="Filter skills">
+      <button type="button" id="f-all" data-f="all" aria-pressed="true">All 33</button>
+      <button type="button" id="f-ok" data-f="ok" aria-pressed="false">Works through Platform MCP</button>
+      <button type="button" id="f-warn" data-f="warn" aria-pressed="false">Reference only</button>
+      <button type="button" id="f-no" data-f="no" aria-pressed="false">Exclude</button>
+    </div>
+    <div class="table-box">
+      <table id="skills-table">
+        <thead><tr><th>Skill</th><th>Fit</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr data-g="ok"><td class="mono">databricks-dbsql</td><td><span class="chip ok">Works</span></td><td>SQL patterns run through read-only SQL</td></tr>
+          <tr data-g="ok"><td class="mono">databricks-data-discovery</td><td><span class="chip ok">Works</span></td><td>Needs the APFM note to route to our Genie spaces instead of Genie One</td></tr>
+          <tr data-g="ok"><td class="mono">databricks-metric-views</td><td><span class="chip ok">Works</span></td><td>Querying metric views; creating them needs write access</td></tr>
+          <tr data-g="ok"><td class="mono">databricks-ai-functions</td><td><span class="chip ok">Works</span></td><td><code>ai_query</code> and related functions run inside <code>SELECT</code></td></tr>
+          <tr data-g="ok"><td class="mono">databricks-unity-catalog</td><td><span class="chip ok">Works</span></td><td>System tables, lineage, and grants reasoning</td></tr>
+          <tr data-g="ok"><td class="mono">databricks-iceberg</td><td><span class="chip ok">Works</span></td><td>Mostly concepts and SQL</td></tr>
+          <tr data-g="ok"><td class="mono">databricks-docs</td><td><span class="chip ok">Works</span></td><td>Documentation lookup, no CLI</td></tr>
+          <tr data-g="ok"><td class="mono">databricks-spark-structured-streaming</td><td><span class="chip ok">Works</span></td><td>Authoring guidance</td></tr>
+          <tr data-g="ok"><td class="mono">databricks-app-design</td><td><span class="chip ok">Works</span></td><td>UX guidance, no CLI</td></tr>
+          <tr data-g="ok"><td class="mono">databricks-synthetic-data-gen</td><td><span class="chip ok">Works</span></td><td>Authoring guidance</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-apps</td><td><span class="chip warn">Reference</span></td><td>Scaffold and deploy need the CLI</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-apps-python</td><td><span class="chip warn">Reference</span></td><td>Deploy needs the CLI</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-dabs</td><td><span class="chip warn">Reference</span></td><td>Bundle deploys need the CLI</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-jobs</td><td><span class="chip warn">Reference</span></td><td>Creating jobs needs write access. Reading run status becomes a typed tool.</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-pipelines</td><td><span class="chip warn">Reference</span></td><td>Pipeline deploys need the CLI. Listing pipelines becomes a typed tool.</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-lakebase</td><td><span class="chip warn">Reference</span></td><td>Provisioning needs the CLI</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-model-serving</td><td><span class="chip warn">Reference</span></td><td>Endpoint management needs write access</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-vector-search</td><td><span class="chip warn">Reference</span></td><td>The Vector Search server type isn't enabled in Platform MCP yet</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-execution-compute</td><td><span class="chip warn">Reference</span></td><td>Running code on clusters needs the CLI</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-ml-training</td><td><span class="chip warn">Reference</span></td><td>Training runs need compute access</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-mlflow-evaluation</td><td><span class="chip warn">Reference</span></td><td>Evaluation runs need compute access</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-genie-agents</td><td><span class="chip warn">Reference</span></td><td>Creating Genie spaces needs write access</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-lakeflow-connect</td><td><span class="chip warn">Reference</span></td><td>Ingestion setup needs write access</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-serverless-migration</td><td><span class="chip warn">Reference</span></td><td>Migration work needs the CLI</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-serverless</td><td><span class="chip warn">Reference</span></td><td>Compute configuration guidance</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-zerobus-ingest</td><td><span class="chip warn">Reference</span></td><td>Ingestion setup needs write access</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-python-sdk</td><td><span class="chip warn">Reference</span></td><td>Useful for code authoring; runs need credentials</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-aibi-dashboards</td><td><span class="chip warn">Reference</span></td><td>Deploying dashboards needs the CLI</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-ai-runtime</td><td><span class="chip warn">Reference</span></td><td>GPU workloads need the <code>air</code> CLI</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-unstructured-pdf-generation</td><td><span class="chip warn">Reference</span></td><td>Writes to volumes</td></tr>
+          <tr data-g="warn"><td class="mono">databricks-core</td><td><span class="chip warn">Reference</span></td><td>Parent skill; mostly CLI and auth. Its routing rules are what the app's skill index replaces.</td></tr>
+          <tr data-g="no"><td class="mono">databricks-unity-gateway</td><td><span class="chip no">Exclude</span></td><td>Managing model, MCP, and provider services is a platform-admin task, not something Platform MCP users do</td></tr>
+          <tr data-g="no"><td class="mono">databricks-setup-local</td><td><span class="chip no">Exclude</span></td><td>Local CLI setup doesn't apply behind the gateway</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:14px;color:var(--muted)">The 13 skills in <code>experimental/</code> are excluded. Databricks doesn't support them.</p>
+
+    <h2 id="design">What we're building</h2>
+    <div class="decision"><span class="chip">Decision</span><br>An APFM-owned MCP server, hosted as a Databricks App on the <span class="mono">aplaceformom</span> workspace. It serves curated skills and a small set of typed, read-only Databricks tools. Platform MCP is the main way users reach it.</div>
+
+    <div class="diagram" role="img" aria-label="Diagram: agents call Platform MCP, which checks the caller's role and forwards through the Databricks provider to the aplaceformom workspace. There, the existing SQL and Genie servers sit beside the new skills app, which serves bundled skills and calls Databricks APIs as the user. A publish job builds the skills from a pinned release of databricks-agent-skills and deploys the app. Local agents can also connect to the app directly.">
+      <svg viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker>
+        </defs>
+        <g font-size="13" fill="var(--fg)">
+          <rect x="10" y="40" width="150" height="84" rx="6" fill="var(--bg)" stroke="var(--rule)"/>
+          <text x="85" y="66" text-anchor="middle" font-weight="600">Agents</text>
+          <text x="85" y="86" text-anchor="middle" fill="var(--muted)" font-size="12">Claude Code, Codex,</text>
+          <text x="85" y="102" text-anchor="middle" fill="var(--muted)" font-size="12">Claude Desktop</text>
+
+          <rect x="220" y="20" width="220" height="200" rx="6" fill="var(--surface-2)" stroke="var(--accent)"/>
+          <text x="330" y="44" text-anchor="middle" font-weight="600">Platform MCP</text>
+          <rect x="236" y="60" width="188" height="34" rx="4" fill="var(--bg)" stroke="var(--rule)"/>
+          <text x="330" y="82" text-anchor="middle" font-size="12">Role check per request</text>
+          <rect x="236" y="104" width="188" height="100" rx="4" fill="var(--bg)" stroke="var(--rule)"/>
+          <text x="330" y="126" text-anchor="middle" font-size="12">Databricks provider</text>
+          <text x="330" y="146" text-anchor="middle" font-size="11" fill="var(--muted)">databricks_call(server=…)</text>
+          <text x="330" y="172" text-anchor="middle" font-size="11" fill="var(--accent)">new: per-server URL,</text>
+          <text x="330" y="188" text-anchor="middle" font-size="11" fill="var(--accent)">skills server type</text>
+
+          <rect x="500" y="20" width="270" height="240" rx="6" fill="var(--bg)" stroke="var(--rule)"/>
+          <text x="635" y="44" text-anchor="middle" font-weight="600">aplaceformom workspace</text>
+          <rect x="518" y="58" width="110" height="34" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="573" y="80" text-anchor="middle" font-size="12">SQL, read-only</text>
+          <rect x="642" y="58" width="110" height="34" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="697" y="80" text-anchor="middle" font-size="12">7 Genie spaces</text>
+          <rect x="518" y="108" width="234" height="96" rx="4" fill="var(--ok-bg)" stroke="var(--ok)"/>
+          <text x="635" y="130" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ok)">Skills app (new)</text>
+          <text x="635" y="148" text-anchor="middle" font-size="11" fill="var(--ok)">mcp-…databricksapps.com/mcp</text>
+          <text x="635" y="170" text-anchor="middle" font-size="11" fill="var(--ok)">list_skills · load_skill · get_skill_file</text>
+          <text x="635" y="188" text-anchor="middle" font-size="11" fill="var(--ok)">typed read-only SDK tools</text>
+          <rect x="518" y="216" width="234" height="32" rx="4" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="635" y="237" text-anchor="middle" font-size="12">Databricks APIs, called as the user</text>
+
+          <rect x="220" y="286" width="220" height="56" rx="6" fill="var(--surface)" stroke="var(--rule)"/>
+          <text x="330" y="309" text-anchor="middle" font-weight="600" font-size="12">Publish job (CI)</text>
+          <text x="330" y="327" text-anchor="middle" font-size="11" fill="var(--muted)">curate, add APFM notes, license</text>
+          <rect x="10" y="286" width="150" height="56" rx="6" fill="var(--bg)" stroke="var(--rule)"/>
+          <text x="85" y="309" text-anchor="middle" font-size="12" font-weight="600">databricks-agent-</text>
+          <text x="85" y="325" text-anchor="middle" font-size="12" font-weight="600">skills (pinned tag)</text>
+        </g>
+        <g stroke="var(--muted)" stroke-width="1.4" fill="none">
+          <path d="M160 82 H218" marker-end="url(#ah)"/>
+          <path d="M424 120 C 470 120, 480 75, 516 75" marker-end="url(#ah)"/>
+          <path d="M424 156 H516" marker-end="url(#ah)"/>
+          <path d="M635 204 V214" marker-end="url(#ah)"/>
+          <path d="M160 314 H218" marker-end="url(#ah)"/>
+          <path d="M440 314 H600 V206" marker-end="url(#ah)"/>
+          <path d="M85 124 V150 C 85 250, 470 250, 516 196" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+        </g>
+        <g font-size="11" fill="var(--muted)">
+          <text x="166" y="74">OAuth (Duo)</text>
+          <text x="458" y="334">bundle deploy</text>
+          <text x="92" y="196">direct, optional</text>
+        </g>
+      </svg>
+    </div>
+
+    <h3>What the app exposes</h3>
+    <div class="table-box">
+      <table>
+        <thead><tr><th>MCP feature</th><th>What it does</th><th>Level</th></tr></thead>
+        <tbody>
+          <tr><td>Startup instructions</td><td>The short skill index: name, when to use it, how to load it. Replaces the routing hook in Databricks' plugin, which can't run over MCP.</td><td></td></tr>
+          <tr><td><code>list_skills(query?)</code></td><td>Names and descriptions, optionally filtered</td><td><span class="chip ok">Read</span></td></tr>
+          <tr><td><code>load_skill(name)</code></td><td><code>SKILL.md</code> with the APFM note in front</td><td><span class="chip ok">Read</span></td></tr>
+          <tr><td><code>get_skill_file(name, path)</code></td><td>Reference files, loaded only when the agent asks</td><td><span class="chip ok">Read</span></td></tr>
+          <tr><td>Typed tools, first set</td><td><code>list_catalogs</code>, <code>describe_table</code>, <code>get_job_run</code>, <code>list_pipelines</code>, <code>get_app_status</code>, <code>genie_ask</code>. Each calls the Python SDK as the user.</td><td><span class="chip ok">Read</span></td></tr>
+          <tr><td>Write tools</td><td>None at launch. Each is added only after review.</td><td><span class="chip no">Blocked</span></td></tr>
+          <tr><td>Resources <code>skill://&lt;name&gt;/&lt;path&gt;</code></td><td>The same skill content, for clients that read resources</td><td><span class="chip ok">Read</span></td></tr>
+          <tr><td>One prompt per skill</td><td>Shows up as a slash command in Claude Code</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The server</h3>
+    <p>It's a Python service using the <code>mcp</code> SDK in stateless HTTP mode, which fits both the Apps proxy and Platform MCP's per-request model.</p>
+<pre><code>from mcp.server.fastmcp import FastMCP
+from databricks.sdk import WorkspaceClient
+
+mcp = FastMCP("apfm-databricks-skills", instructions=INDEX, stateless_http=True)
+
+@mcp.tool()
+def load_skill(name: str) -&gt; str:
+    """Load a Databricks skill's SKILL.md (with APFM notes)."""
+    return read_skill(name)            # only names on the curated list
+
+@mcp.tool()
+def describe_table(full_name: str) -&gt; dict:
+    """Describe a Unity Catalog table as the calling user."""
+    w = WorkspaceClient(token=user_token(), auth_type="pat")
+    return w.tables.get(full_name).as_dict()
+
+app = mcp.streamable_http_app()        # serves /mcp</code></pre>
+    <p><code>read_skill</code> opens files only inside the app's <code>skills/</code> folder, so a crafted name can't read anything else. <code>user_token()</code> reads the user's token from the <code>x-forwarded-access-token</code> header. The repo would look like this:</p>
+<pre><code>apfm-databricks-skills-mcp/
+  app.py            # MCP server and tools
+  app.yaml          # uvicorn app:app on port 8000
+  databricks.yml    # bundle: the app, CAN_USE grants, user_api_scopes
+  skills/           # curated copy, written by the publish job
+  overlay/          # APFM notes, LICENSE, NOTICE</code></pre>
+
+    <h3>Skill content and the publish job</h3>
+    <p>A CI job pulls a pinned <code>databricks-agent-skills</code> release and keeps only the curated list. It adds the APFM note and license files, writes them into <code>skills/</code>, generates the skill index, and runs <code>databricks bundle deploy</code>. Updating skills means redeploying the app, with no Platform MCP release. Later, the content can move to a Unity Catalog volume so skills update without a redeploy and volume grants can split them into tiers.</p>
+    <p>The APFM note at the top of each skill tells the agent:</p>
+    <div class="callout">Behind Platform MCP: run SQL with <code>databricks_call(workspace="aplaceformom", server="sql", tool="execute_sql_read_only")</code> and ask data questions through the <code>helix_care_*</code> Genie servers. Where this skill says to run a CLI command, use the matching tool from the skills server if one exists, for example <code>describe_table</code> for <code>databricks tables get</code>. Steps with no matching tool, including deploy and write steps, need a local setup and aren't available through Platform MCP.</div>
+
+    <h3>Access</h3>
+    <ul>
+      <li>Grant <code>CAN_USE</code> on the app to the same groups that hold the Databricks role in Platform MCP.</li>
+      <li>Declare only the <code>user_api_scopes</code> the typed tools need. A tool that needs a scope the app didn't request gets a 403.</li>
+      <li>Typed tools always run as the user, so Unity Catalog permissions and audit logs apply to the real person. The app's own service principal is used only to serve skill text.</li>
+    </ul>
+
+    <h2 id="cli">Python SDK only</h2>
+    <p>Every Databricks operation in the app goes through the Databricks Python SDK (<code>databricks-sdk</code>). The app doesn't install or run the Databricks CLI, not even as a fallback.</p>
+    <ul>
+      <li><strong>One tool per operation.</strong> Each tool calls a specific SDK method with typed parameters, and Platform MCP enforces a read or write level for it. A tool that accepts any command can't be gated this way, because Platform MCP only sees the tool name.</li>
+      <li><strong>Runs as the user.</strong> Each call builds a <code>WorkspaceClient</code> from the forwarded user token, so Unity Catalog permissions and audit logs apply to the real person.</li>
+      <li><strong>Nothing extra to ship.</strong> The SDK installs from <code>requirements.txt</code>, with no binary to package and no subprocess to manage.</li>
+      <li><strong>Gaps.</strong> If a skill relies on an operation the SDK doesn't cover, we leave that step out of Platform MCP. The APFM note marks it as needing a local setup.</li>
+    </ul>
+
+    <h2 id="platform">Platform MCP changes</h2>
+    <ul>
+      <li><strong>Per-server URL override.</strong> The provider builds every upstream URL from the workspace hostname plus a path. The app lives on its own <code>*.databricksapps.com</code> domain, so <code>servertypes.go</code> and <code>config.go</code> need a way to set the base URL per server. This is the main code change.</li>
+      <li><strong>A <code>skills</code> server type</strong> that allows the app's tools at their levels:</li>
+    </ul>
+<pre><code>"skills": {
+    PathTemplate: "/mcp",
+    AllowedTools: map[string]string{
+        "list_skills":    util.TierRead,
+        "load_skill":     util.TierRead,
+        "get_skill_file": util.TierRead,
+        "list_catalogs":  util.TierRead,
+        "describe_table": util.TierRead,
+        // one entry per typed tool; write tools only after review
+    },
+},</code></pre>
+    <ul>
+      <li><strong>Config</strong> in <code>config.yaml</code>, under <code>workspaces.aplaceformom.servers</code>:</li>
+    </ul>
+<pre><code>skills:
+  type: skills
+  enabled: true
+  base_url: "https://mcp-apfm-skills-&lt;id&gt;.aws.databricksapps.com"   # new field
+  description: "APFM-curated Databricks agent skills and read-only tools"</code></pre>
+    <ul>
+      <li><strong>Guidance.</strong> One line in the Databricks provider's <code>guidance.md</code> pointing agents at the skills server. The full index comes from the app's own startup instructions.</li>
+      <li><strong>Tests</strong> that mirror the existing allowed-tool tests, and a new end-to-end case.</li>
+    </ul>
+
+    <h2 id="options">Options considered</h2>
+    <div class="table-box">
+      <table>
+        <thead><tr><th></th><th>A. Local install only</th><th>B. Bundle in Platform MCP</th><th>C. Unity Catalog Skills, proxied</th><th class="rec">D. Databricks App <span class="chip ok">Decided</span></th></tr></thead>
+        <tbody>
+          <tr><td><strong>How</strong></td><td>Engineers install the official plugin or run <code>databricks aitools install</code></td><td>Copy a pinned release into the Platform MCP binary, served by two new tools</td><td>Publish curated skills to Databricks' skill registry in Unity Catalog and proxy it</td><td class="rec">Our own MCP server, hosted as a Databricks App</td></tr>
+          <tr><td><strong>Reaches Desktop users</strong></td><td><span class="chip no">No</span></td><td><span class="chip ok">Yes</span></td><td><span class="chip ok">Yes</span></td><td class="rec"><span class="chip ok">Yes</span></td></tr>
+          <tr><td><strong>Governance</strong></td><td><span class="chip no">Personal CLI logins</span></td><td><span class="chip warn">Role only</span></td><td><span class="chip ok">Role and UC grants</span></td><td class="rec"><span class="chip warn">Role and app access</span>, plus volume grants later</td></tr>
+          <tr><td><strong>Can add our own tools</strong></td><td>No</td><td>Yes, in Go</td><td>No</td><td class="rec">Yes, typed SDK tools</td></tr>
+          <tr><td><strong>Usable outside Platform MCP</strong></td><td>Yes, locally</td><td>No</td><td>Yes</td><td class="rec">Yes</td></tr>
+          <tr><td><strong>Platform MCP changes</strong></td><td>None</td><td>About 150 lines</td><td>One server-type entry</td><td class="rec">Server type plus a URL override</td></tr>
+          <tr><td><strong>Running cost</strong></td><td>None</td><td>None</td><td>None</td><td class="rec">An always-on app</td></tr>
+          <tr><td><strong>Main drawback</strong></td><td>Leaves most users out</td><td>Ties skill updates to Platform MCP releases</td><td>Depends on a registry endpoint we couldn't verify, with no room for our own tools</td><td class="rec">Another service to run and maintain</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>We chose D because it reaches every Platform MCP user, keeps skill updates separate from Platform MCP releases, and is the only option that lets us replace CLI steps with our own governed tools. It's also usable by agents outside Platform MCP. The cost is one more service for us to run.</p>
+
+    <h2 id="plan">Rollout plan</h2>
+    <ol class="steps">
+      <li><div><h3>Spike the auth path</h3><p>Deploy a minimal MCP app in sandbox. Call it with a token issued by Platform MCP and confirm the app accepts it and receives the user's token. Confirm the naming convention for MCP apps.</p><div class="who">DPLAT with Data Platform · Done when a test call through Platform MCP reaches the app as the user</div></div></li>
+      <li><div><h3>Set up the app and bundle</h3><p>Create the repo, <code>app.yaml</code> and <code>databricks.yml</code>. Grant <code>CAN_USE</code> to the right groups and declare the user scopes.</p><div class="who">DPLAT, Data Platform · Done when the app runs and only granted users can reach it</div></div></li>
+      <li><div><h3>Serve the skills and build the publish job</h3><p>Add <code>list_skills</code>, <code>load_skill</code>, <code>get_skill_file</code> and the startup index. The job pins a release, curates, adds APFM notes and license files, then deploys the app.</p><div class="who">DPLAT · Done when a version bump in CI redeploys the app with new skills</div></div></li>
+      <li><div><h3>Add the first typed tools</h3><p>Build the read-only SDK tools listed above, each running as the user, with unit tests.</p><div class="who">DPLAT · Done when each tool returns the user's own view and fails cleanly on a 403</div></div></li>
+      <li><div><h3>Change Platform MCP</h3><p>Add the per-server URL override, the <code>skills</code> server type, the config entry, and the guidance line, with tests.</p><div class="who">DPLAT · Done when <code>databricks_discover_tools</code> lists the skills server and unknown tools are rejected</div></div></li>
+      <li><div><h3>Extend the end-to-end checks</h3><p>List skills, load <code>databricks-dbsql</code>, follow it to run a read-only query, and call <code>describe_table</code>.</p><div class="who">DPLAT · Done when the new e2e case passes in sandbox</div></div></li>
+      <li><div><h3>Document and announce</h3><p>Update the Databricks provider docs and the Platform MCP Getting Started page on Confluence, including the local-install path for engineers.</p><div class="who">DPLAT · Done when published and announced</div></div></li>
+    </ol>
+
+    <h2 id="risks">Risks and open questions</h2>
+    <div class="table-box">
+      <table>
+        <thead><tr><th>Item</th><th>Detail</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip warn">Unverified</span> Token path</td><td>We don't know yet whether the app accepts the workspace OAuth token Platform MCP holds for each user, or whether the user's token reaches the app's code when the call comes through Platform MCP. The header may only be set when the app declares user scopes.</td><td>DPLAT, Data Platform</td></tr>
+          <tr><td>Running a service</td><td>The app needs an owner, monitoring, and on-call like any other service. An app that's down takes skills and typed tools offline for every Platform MCP user.</td><td>DPLAT</td></tr>
+          <tr><td>Cost</td><td>Databricks Apps bill while running. Confirm the compute size and expected monthly cost.</td><td>Data Platform</td></tr>
+          <tr><td>Tool creep</td><td>Pressure to add write tools will grow. Each one needs its own review and a write level in Platform MCP.</td><td>Security and IAM</td></tr>
+          <tr><td>Licensing</td><td>The Databricks License allows redistribution for use with Databricks. We must include the License and NOTICE and mark modified files clearly. The APFM note keeps our changes separate from upstream text.</td><td>Security</td></tr>
+          <tr><td>Agents may ignore skills</td><td>Desktop and Codex don't auto-load MCP-delivered skills the way local ones load. We rely on the index and will measure it in the e2e suite rather than assume it works.</td><td>DPLAT</td></tr>
+          <tr><td>Upstream changes fast</td><td>Databricks ships releases several times a week and CLI flags change. We pin releases and update deliberately.</td><td>DPLAT</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="faq">FAQ</h2>
+    <dl class="faq">
+      <dt>I use Claude Desktop. What changes for me?</dt>
+      <dd>Nothing to install. Once your Databricks account is linked in Platform MCP, Claude can look up a Databricks skill when your question calls for one, and use the read-only tools to check things like a table's schema or a job run's status.</dd>
+      <dt>I'm an engineer with the Databricks CLI. Should I stop using the plugin?</dt>
+      <dd>No. Keep the official plugin for building and deploying apps, jobs, pipelines, and bundles. Platform MCP covers governed, read-only work and is the only path for people without a CLI.</dd>
+      <dt>Why doesn't the app just run the Databricks CLI?</dt>
+      <dd>The app uses only the Python SDK. A tool that runs any command can't be gated safely, because Platform MCP only sees the tool name. One SDK tool per operation lets us allow reads, block writes, and review each new operation on its own.</dd>
+      <dt>Can our own teams add skills or tools?</dt>
+      <dd>Yes. APFM-written skills go into the same curated folder, and new tools are added by pull request to the app repo, with a review for anything that writes.</dd>
+      <dt>Does this give anyone new data access?</dt>
+      <dd>No. Skills are instructions, not data, and every tool runs as you, under your existing Unity Catalog permissions.</dd>
+      <dt>Why not load every skill into every session?</dt>
+      <dd>The full set is about 3.3 MB of text. Only the short index is always loaded. The agent pulls a full skill when it needs one.</dd>
+    </dl>
+
+    <footer>
+      Sources: <span class="mono">aplaceformom/platform-mcp</span> at commit <span class="mono">6675af1</span> (October 21, 2026) and <span class="mono">databricks/databricks-agent-skills</span> v0.2.37 (October 28, 2026). Skill counts and CLI line counts come from a direct scan of the repository. Feedback: reply in the thread where this was shared, or contact Joey Filichia.
+    </footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  var buttons = document.querySelectorAll('.skills-filter button');
+  var rows = document.querySelectorAll('#skills-table tbody tr');
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var f = b.getAttribute('data-f');
+      buttons.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      rows.forEach(function (r) { r.hidden = f !== 'all' && r.getAttribute('data-g') !== f; });
+    });
+  });
+})();
+</script>
